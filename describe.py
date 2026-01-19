@@ -24,8 +24,26 @@ def ft_mean(df, count_lst, cols):
     return mean_lst
 
 
-# def ft_std():
+def valid_numbers(df, col):
+    nb_lst = []
+    for nb in df.iloc[:, col]:
+        if not pd.isna(nb):
+            nb_lst.append(nb)
+    return nb_lst
 
+
+def variance(df, mean_lst, cols):
+    var_lst = []
+    for col, mean in zip(range(cols), mean_lst):
+        nb_lst = valid_numbers(df, col)
+        
+        var = sum([() ** 2 ]) / len(nb_lst)
+    return var_lst
+
+
+def ft_std(df, mean_lst, count_lst, cols):
+    var = variance(df, mean_lst)
+    return [v ** 0.5 for v in var]
 
 
 def ft_min(df, cols):
@@ -41,14 +59,6 @@ def ft_min(df, cols):
                     min_nb = nb
         min_lst.append(round(min_nb, 6))
     return min_lst
-
-
-def valid_numbers(df, col):
-    nb_lst = []
-    for nb in df.iloc[:, col]:
-        if not pd.isna(nb):
-            nb_lst.append(nb) 
-    return nb_lst
 
 
 def ft_quartile(df, count_lst, cols, q):
@@ -90,7 +100,7 @@ def analyze_csv(df):
     count_lst = ft_count(csv_part, csv_part.shape[1])
     mean_lst = ft_mean(csv_part, count_lst, csv_part.shape[1])
     print(mean_lst)
-    # std_lst = ft_std(csv_part, csv_part.shape[1])
+    std_lst = ft_std(csv_part, mean_lst, count_lst, csv_part.shape[1])
     min_lst = ft_min(csv_part, csv_part.shape[1])
     q25_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q1)
     q50_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q2)
