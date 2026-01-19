@@ -1,6 +1,9 @@
 import pandas as pd
 import sys
 
+Q1 = 1
+Q2 = 2
+Q3 = 3
 
 def ft_count(df, cols):
     count_lst = []
@@ -48,36 +51,24 @@ def valid_numbers(df, col):
     return nb_lst
 
 
-def ft_q25(df, count_lst, cols):
-    q25_lst = []
+def ft_quartile(df, count_lst, cols, q):
+    quartile_lst = []
     for col, nb_values in zip(range(cols), count_lst):
         nb_lst = valid_numbers(df, col)
         sorted_nb = sorted(nb_lst)
-        i_q25 = int(nb_values) // 4
-        if i_q25 % 4 == 0:
-            q25 = (sorted_nb[i_q25 - 1] + sorted_nb[i_q25]) / 2
+        if q == Q1:
+            i_quartile = int(nb_values) // 4
+        elif q == Q2:
+            i_quartile = int(nb_values) * 2 // 4
+        elif q == Q3:
+            i_quartile = int(nb_values) * 3 // 4
+        if i_quartile % 4 == 0:
+            quartile = (sorted_nb[i_quartile - 1] + sorted_nb[i_quartile]) / 2
         else:
-            q25 = sorted_nb[i_q25]
-        q25_lst.append(round(q25, 6))
-    return q25_lst
+            quartile = sorted_nb[i_quartile]
+        quartile_lst.append(round(quartile, 6))
+    return quartile_lst
 
-
-def ft_q50(df, count_lst, cols):
-
-
-
-def ft_q75(df, count_lst, cols):
-    q75_lst = []
-    for col, nb_values in zip(range(cols), count_lst):
-        nb_lst = valid_numbers(df, col)
-        sorted_nb = sorted(nb_lst)
-        i_q75 = int(nb_values) * 3 // 4
-        if i_q75 % 4 == 0:
-            q75 = (sorted_nb[i_q75 - 1] + sorted_nb[i_q75]) / 2
-        else:
-            q75 = sorted_nb[i_q75]
-        q75_lst.append(round(q75, 6))
-    return q75_lst
 
 def ft_max(df, cols):
     max_lst = []
@@ -98,15 +89,15 @@ def analyze_csv(df):
     csv_part = df.iloc[:, 6:]
     count_lst = ft_count(csv_part, csv_part.shape[1])
     mean_lst = ft_mean(csv_part, count_lst, csv_part.shape[1])
+    print(mean_lst)
     # std_lst = ft_std(csv_part, csv_part.shape[1])
     min_lst = ft_min(csv_part, csv_part.shape[1])
-    q25_lst = ft_q25(csv_part, count_lst, csv_part.shape[1])
-    q50_lst = ft_q50(csv_part, count_lst, csv_part.shape[1])
-    print(q50_lst)
-    q75_lst = ft_q75(csv_part, count_lst, csv_part.shape[1])
+    q25_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q1)
+    q50_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q2)
+    q75_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q3)
     max_lst = ft_max(csv_part, csv_part.shape[1])
 
-    # return [count_lst, mean_lst, std_lst, min_lst, q25_lst, q50_lst, q75_lst, max_lst]
+    return [count_lst, mean_lst, std_lst, min_lst, q25_lst, q50_lst, q75_lst, max_lst]
 
 def main():
     try:
