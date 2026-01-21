@@ -12,7 +12,7 @@ def ft_count(df, cols):
         for nb in df.iloc[:, col]:
             if not pd.isna(nb):
                 count += 1
-        count_lst.append(round(float(count), 6))
+        count_lst.append(count)
     return count_lst
 
 
@@ -20,7 +20,7 @@ def ft_mean(df, count_lst, cols):
     mean_lst = []
     for col, nb_values in zip(range(cols), count_lst):
         result = sum(nb for nb in df.iloc[:, col] if not pd.isna(nb)) / nb_values
-        mean_lst.append(round(result, 6))
+        mean_lst.append(result)
     return mean_lst
 
 
@@ -36,13 +36,13 @@ def variance(df, mean_lst, cols):
     var_lst = []
     for col, mean in zip(range(cols), mean_lst):
         nb_lst = valid_numbers(df, col)
-        
-        var = sum([() ** 2 ]) / len(nb_lst)
+        var = sum([(nb - mean) ** 2 for nb in nb_lst]) / len(nb_lst)
+        var_lst.append(var)
     return var_lst
 
 
-def ft_std(df, mean_lst, count_lst, cols):
-    var = variance(df, mean_lst)
+def ft_std(df, mean_lst, cols):
+    var = variance(df, mean_lst, cols)
     return [v ** 0.5 for v in var]
 
 
@@ -57,7 +57,7 @@ def ft_min(df, cols):
             if not pd.isna(nb):
                 if nb < min_nb:
                     min_nb = nb
-        min_lst.append(round(min_nb, 6))
+        min_lst.append(min_nb)
     return min_lst
 
 
@@ -76,7 +76,7 @@ def ft_quartile(df, count_lst, cols, q):
             quartile = (sorted_nb[i_quartile - 1] + sorted_nb[i_quartile]) / 2
         else:
             quartile = sorted_nb[i_quartile]
-        quartile_lst.append(round(quartile, 6))
+        quartile_lst.append(quartile)
     return quartile_lst
 
 
@@ -91,7 +91,7 @@ def ft_max(df, cols):
             if not pd.isna(nb):
                 if nb > max_nb:
                     max_nb = nb
-        max_lst.append(round(max_nb, 6))
+        max_lst.append(max_nb)
     return max_lst
 
 
@@ -99,8 +99,7 @@ def analyze_csv(df):
     csv_part = df.iloc[:, 6:]
     count_lst = ft_count(csv_part, csv_part.shape[1])
     mean_lst = ft_mean(csv_part, count_lst, csv_part.shape[1])
-    print(mean_lst)
-    std_lst = ft_std(csv_part, mean_lst, count_lst, csv_part.shape[1])
+    std_lst = ft_std(csv_part, mean_lst, csv_part.shape[1])
     min_lst = ft_min(csv_part, csv_part.shape[1])
     q25_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q1)
     q50_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q2)
@@ -114,10 +113,8 @@ def main():
         av = sys.argv
         if not len(av) == 2:
             raise SystemExit("Wrong number of arguments.")
-
         df = pd.read_csv(av[1])
-
-        analyze_csv(df)
+        data = analyze_csv(df)
     except Exception as e:
         print(f"Error: {e}")
 
