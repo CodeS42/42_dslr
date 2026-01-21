@@ -1,12 +1,14 @@
 import pandas as pd
 import sys
 
+
 Q1 = 1
 Q2 = 2
 Q3 = 3
 
+
 def ft_count(df, cols):
-    count_lst = []
+    count_lst = ["Count"]
     for col in range(cols):
         count = 0
         for nb in df.iloc[:, col]:
@@ -17,7 +19,7 @@ def ft_count(df, cols):
 
 
 def ft_mean(df, count_lst, cols):
-    mean_lst = []
+    mean_lst = ["Mean"]
     for col, nb_values in zip(range(cols), count_lst):
         result = sum(nb for nb in df.iloc[:, col] if not pd.isna(nb)) / nb_values
         mean_lst.append(result)
@@ -43,11 +45,14 @@ def variance(df, mean_lst, cols):
 
 def ft_std(df, mean_lst, cols):
     var = variance(df, mean_lst, cols)
-    return [v ** 0.5 for v in var]
+    std_lst = ["Std"]
+    for v in var:
+        std_lst.append(v ** 0.5)
+    return std_lst
 
 
 def ft_min(df, cols):
-    min_lst = []
+    min_lst = ["Min"]
     for col in range(cols):
         i = 0
         while pd.isna(df.iloc[i, col]):
@@ -62,7 +67,12 @@ def ft_min(df, cols):
 
 
 def ft_quartile(df, count_lst, cols, q):
-    quartile_lst = []
+    if q == Q1:
+        quartile_lst = ["25%"]
+    elif q == Q2:
+        quartile_lst = ["50%"]
+    elif q == Q3:
+        quartile_lst = ["75%"]
     for col, nb_values in zip(range(cols), count_lst):
         nb_lst = valid_numbers(df, col)
         sorted_nb = sorted(nb_lst)
@@ -81,7 +91,7 @@ def ft_quartile(df, count_lst, cols, q):
 
 
 def ft_max(df, cols):
-    max_lst = []
+    max_lst = ["Max"]
     for col in range(cols):
         i = 0
         while pd.isna(df.iloc[i, col]):
@@ -95,18 +105,51 @@ def ft_max(df, cols):
     return max_lst
 
 
-def analyze_csv(df):
-    csv_part = df.iloc[:, 6:]
-    count_lst = ft_count(csv_part, csv_part.shape[1])
-    mean_lst = ft_mean(csv_part, count_lst, csv_part.shape[1])
-    std_lst = ft_std(csv_part, mean_lst, csv_part.shape[1])
-    min_lst = ft_min(csv_part, csv_part.shape[1])
-    q25_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q1)
-    q50_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q2)
-    q75_lst = ft_quartile(csv_part, count_lst, csv_part.shape[1], Q3)
-    max_lst = ft_max(csv_part, csv_part.shape[1])
+def ft_nan(df, cols):
+    nan_lst = ["Nan"]
+    for col in range(cols):
+        count = 0
+        for nb in df.iloc[:, col]:
+            if pd.isna(nb):
+                count += 1
+        nan_lst.append(count)
+    return nan_lst
 
-    return [count_lst, mean_lst, std_lst, min_lst, q25_lst, q50_lst, q75_lst, max_lst]
+
+def analyze_csv(df):
+    count_lst = ft_count(df, df.shape[1])
+    mean_lst = ft_mean(df, count_lst[1:], df.shape[1])
+    std_lst = ft_std(df, mean_lst[1:], df.shape[1])
+    min_lst = ft_min(df, df.shape[1])
+    q25_lst = ft_quartile(df, count_lst[1:], df.shape[1], Q1)
+    q50_lst = ft_quartile(df, count_lst[1:], df.shape[1], Q2)
+    q75_lst = ft_quartile(df, count_lst[1:], df.shape[1], Q3)
+    max_lst = ft_max(df, df.shape[1])
+    nan_lst = ft_nan(df, df.shape[1])
+
+    return [count_lst, mean_lst, std_lst, min_lst, q25_lst, q50_lst, q75_lst, max_lst, nan_lst]
+
+
+def print_statistics(titles, stats):
+    len_titles_lst = [None]
+    print(f"{'':>10}", end="")
+    for title in titles:
+        len_title = len(title) if len(title) > 14 else 14
+        len_titles_lst.append(len_title)
+        print(f" {title:>{len_title}} ", end="")
+    print()
+    for stat in stats:
+        for data, len_title in zip(stat, len_titles_lst):
+            if isinstance(data, str):
+                print(f"{data:<10}", end="")
+            else:
+                data = f"{data:.6f}"
+                if len_title == None or len_title <= 14:
+                    print(f" {data:>14} ", end="")
+                else:
+                    print(f" {data:>{len_title}} ", end="")
+        print()
+
 
 def main():
     try:
@@ -114,7 +157,9 @@ def main():
         if not len(av) == 2:
             raise SystemExit("Wrong number of arguments.")
         df = pd.read_csv(av[1])
-        data = analyze_csv(df)
+        df = pd.concat([df.iloc[:, 0:1], df.iloc[:, 6:]], axis=1)
+        stats = analyze_csv(df)
+        print_statistics(df.columns, stats)
     except Exception as e:
         print(f"Error: {e}")
 
