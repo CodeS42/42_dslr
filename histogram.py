@@ -3,20 +3,43 @@ import pandas as pd
 import sys
 
 
-# def std():
+def calculate_global_means(courses_means):
+    global_means = []
 
-
-def mean(marks):
-    means_per_house = []
-
-    for house in marks:
-        means_courses = []
-        for course in house:
-            mean = sum(course) / len(course)
-            means_courses.append(mean)
-        means_per_house.append(means_courses)
+    for means in courses_means:
+        global_mean = sum(means) / 4
+        global_means.append(global_mean)
     
-    return means_per_house
+    return global_means
+
+
+def var(course_means, global_mean):
+    return sum([(mean - global_mean) ** 2 for mean in course_means]) / 4
+
+
+def std(courses_means):
+    global_means = calculate_global_means(courses_means)
+    std_per_course = []
+
+    for course_means, global_mean in zip(courses_means, global_means):
+        var_result = var(course_means, global_mean)
+        std_result = var_result ** 0.5
+        std_per_course.append(std_result)
+
+    return std_per_course
+
+
+def means_per_course(marks):
+    courses_means = []
+
+    for g_course, s_course, h_course, r_course in zip(marks[0], marks[1], marks[2], marks[3]):
+        g_mean = sum(g_course) / len(g_course)
+        s_mean = sum(s_course) / len(s_course)
+        h_mean = sum(h_course) / len(h_course)
+        r_mean = sum(r_course) / len(r_course)
+        courses_means.append([g_mean, s_mean, h_mean, r_mean])
+    
+    return courses_means
 
 
 def retrieve_marks(df, houses, courses):
@@ -34,6 +57,7 @@ def retrieve_marks(df, houses, courses):
 
         for mark in df[course]:
             if pd.isna(mark):
+                i += 1
                 continue
             mark = float(mark)
             house = houses[i]
@@ -54,6 +78,28 @@ def retrieve_marks(df, houses, courses):
     return [gryffindor_marks, slytherin_marks, hufflepuff_marks, ravenclaw_marks]
 
 
+def course_smallest_std(std_per_course, courses):
+    min_std = std_per_course[0]
+    course_name = courses[0]
+    i = 1
+
+    for nb in std_per_course[1:]:
+        if nb < min_std:
+            min_std = nb
+            course_name = courses[i]
+        i += 1
+    
+    return course_name
+
+
+def display_histogram(smallest_std, marks):
+    plt.hist(label=["Griffindor", "Slytherin", "Hufflepuff", "Ravenclaw"])
+    plt.title(smallest_std)
+    plt.ylabel()
+    plt.xlabel("Marks")
+    plt.show()
+
+
 def main():
     try:
         if not len(sys.argv) == 1:
@@ -61,7 +107,10 @@ def main():
         df = pd.read_csv("dataset_train.csv")
 
         marks = retrieve_marks(df, df.iloc[:, 1], df.iloc[:, 6:].columns)
-        mean_per_house = mean(marks)
+        std_per_course = std(means_per_course(marks))
+        smallest_std = course_smallest_std(std_per_course, df.iloc[:, 6:].columns)
+        retrieve_course_marks()
+        display_histogram(smallest_std, df[smallest_std])
     except Exception as e:
         print(f"Error: {e}")
 
