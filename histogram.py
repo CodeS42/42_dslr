@@ -80,24 +80,29 @@ def retrieve_marks(df, houses, courses):
 
 def course_smallest_std(std_per_course, courses):
     min_std = std_per_course[0]
-    course_name = courses[0]
+    course_name = (courses[0], 0)
     i = 1
 
     for nb in std_per_course[1:]:
         if nb < min_std:
             min_std = nb
-            course_name = courses[i]
+            course_name = (courses[i], i)
         i += 1
     
     return course_name
 
 
 def display_histogram(smallest_std, marks):
-    plt.hist(label=["Griffindor", "Slytherin", "Hufflepuff", "Ravenclaw"])
+    plt.hist(marks, label=["Gryffindor", "Slytherin", "Hufflepuff", "Ravenclaw"], histtype="stepfilled", alpha=0.5)
     plt.title(smallest_std)
-    plt.ylabel()
     plt.xlabel("Marks")
+    plt.ylabel("Number of Students")
+    plt.legend()
     plt.show()
+
+
+def retrieve_course_marks(marks, course_i):
+    return [house[course_i] for house in marks]
 
 
 def main():
@@ -109,8 +114,8 @@ def main():
         marks = retrieve_marks(df, df.iloc[:, 1], df.iloc[:, 6:].columns)
         std_per_course = std(means_per_course(marks))
         smallest_std = course_smallest_std(std_per_course, df.iloc[:, 6:].columns)
-        retrieve_course_marks()
-        display_histogram(smallest_std, df[smallest_std])
+        course_marks = retrieve_course_marks(marks, smallest_std[1])
+        display_histogram(smallest_std[0], course_marks)
     except Exception as e:
         print(f"Error: {e}")
 
